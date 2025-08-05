@@ -55,9 +55,9 @@ export default function ContractorOnboarding() {
     // Professional Setup
     preferredWorkSchedule: "",
     primaryWorkLocation: "",
-    socialMediaPlatforms: [],
+    socialMediaPlatforms: [] as string[],
     marketingStrategy: "",
-    targetMarkets: [],
+    targetMarkets: [] as string[],
 
     // Background Consent
     backgroundCheckConsent: false,
@@ -85,10 +85,13 @@ export default function ContractorOnboarding() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleArrayChange = (field: string, value: string, checked: boolean) => {
+  const handleArrayChange = (field: string, value: string, checked: boolean | 'indeterminate') => {
+    const isChecked = checked === true
     setFormData((prev) => ({
       ...prev,
-      [field]: checked ? [...prev[field], value] : prev[field].filter((item: string) => item !== value),
+      [field]: isChecked 
+        ? [...(prev[field as keyof typeof prev] as string[]), value] 
+        : (prev[field as keyof typeof prev] as string[]).filter((item: string) => item !== value),
     }))
   }
 
@@ -186,6 +189,14 @@ export default function ContractorOnboarding() {
     setIsSubmitting(true)
 
     try {
+      // Generate agent ID: AG + 5 random numbers
+      const generateAgentId = () => {
+        const randomNumbers = Math.floor(10000 + Math.random() * 90000) // Generates 5-digit number
+        return `AG${randomNumbers}`
+      }
+
+      const agentId = generateAgentId()
+
       // Format timestamp with EST
       const now = new Date()
       const estTime = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }))
@@ -203,6 +214,7 @@ export default function ContractorOnboarding() {
       // Prepare the data for submission
       const submissionData = {
         timestamp: formattedTimestamp,
+        agentId: agentId,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -231,7 +243,7 @@ export default function ContractorOnboarding() {
 
       // Submit to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwIhFTefzgi5UT6xclNaVv9N3ZqVK3Lo_4pcs5bttosv8E3Dx0EVAfCCNH7I0VJmhWb/exec",
+        "https://script.google.com/macros/s/AKfycbwRWM3C5a71bpdLfmynoIPMqthsBeeaXOxJVt4hqL-oCRHs9XSs-l--2zcP92xzSu32/exec",
         {
           method: "POST",
           mode: "no-cors",
@@ -649,7 +661,7 @@ export default function ContractorOnboarding() {
             <Checkbox
               id="backgroundCheckConsent"
               checked={formData.backgroundCheckConsent}
-              onCheckedChange={(checked) => handleInputChange("backgroundCheckConsent", checked)}
+              onCheckedChange={(checked) => handleInputChange("backgroundCheckConsent", checked === true)}
               className="mt-1"
             />
             <div className="flex-1">
@@ -850,7 +862,7 @@ export default function ContractorOnboarding() {
             <Checkbox
               id="contractorAgreement"
               checked={formData.contractorAgreement}
-              onCheckedChange={(checked) => handleInputChange("contractorAgreement", checked)}
+              onCheckedChange={(checked) => handleInputChange("contractorAgreement", checked === true)}
               className="mt-1"
             />
             <div className="flex-1">
@@ -861,6 +873,38 @@ export default function ContractorOnboarding() {
                 I understand and agree to the terms of the Independent Contractor Agreement, including my status as a
                 1099 contractor, commission structure, and performance expectations.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowContractorAgreement(!showContractorAgreement)}
+                className="mb-4"
+              >
+                {showContractorAgreement ? (
+                  <>
+                    <ChevronUp className="w-4 h-4 mr-2" />
+                    Hide Agreement
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4 mr-2" />
+                    View Agreement
+                  </>
+                )}
+              </Button>
+              {showContractorAgreement && (
+                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 text-sm max-h-96 overflow-y-auto">
+                  <h4 className="font-semibold mb-3">Independent Contractor Agreement</h4>
+                  <div className="space-y-3 text-gray-700">
+                    <p><strong>1. Independent Contractor Status:</strong> You are an independent contractor, not an employee. You will receive 1099 tax documentation and are responsible for your own taxes.</p>
+                    <p><strong>2. Commission Structure:</strong> Compensation is performance-based through commission sales. No hourly wage or salary is provided.</p>
+                    <p><strong>3. Performance Expectations:</strong> Maintain professional standards, meet sales targets, and represent the company with integrity.</p>
+                    <p><strong>4. Work Schedule:</strong> Flexible schedule based on your availability and client needs.</p>
+                    <p><strong>5. Territory:</strong> Assigned marketing territory as discussed during onboarding.</p>
+                    <p><strong>6. Termination:</strong> Either party may terminate this agreement with written notice.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -870,7 +914,7 @@ export default function ContractorOnboarding() {
             <Checkbox
               id="codeOfConduct"
               checked={formData.codeOfConduct}
-              onCheckedChange={(checked) => handleInputChange("codeOfConduct", checked)}
+              onCheckedChange={(checked) => handleInputChange("codeOfConduct", checked === true)}
               className="mt-1"
             />
             <div className="flex-1">
@@ -881,6 +925,39 @@ export default function ContractorOnboarding() {
                 I agree to maintain professional standards, ethical business practices, and represent Advanced Digital
                 Marketing LLC with integrity in all client interactions.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCodeOfConduct(!showCodeOfConduct)}
+                className="mb-4"
+              >
+                {showCodeOfConduct ? (
+                  <>
+                    <ChevronUp className="w-4 h-4 mr-2" />
+                    Hide Code of Conduct
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4 mr-2" />
+                    View Code of Conduct
+                  </>
+                )}
+              </Button>
+              {showCodeOfConduct && (
+                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 text-sm max-h-96 overflow-y-auto">
+                  <h4 className="font-semibold mb-3">Agent Code of Conduct & Professional Standards</h4>
+                  <div className="space-y-3 text-gray-700">
+                    <p><strong>1. Professional Conduct:</strong> Maintain the highest standards of professionalism in all client interactions and business communications.</p>
+                    <p><strong>2. Ethical Practices:</strong> Conduct all business activities with honesty, integrity, and transparency.</p>
+                    <p><strong>3. Client Relations:</strong> Treat all clients with respect, courtesy, and provide exceptional service quality.</p>
+                    <p><strong>4. Company Representation:</strong> Represent Advanced Digital Marketing LLC positively and accurately in all interactions.</p>
+                    <p><strong>5. Confidentiality:</strong> Maintain strict confidentiality of client information and company proprietary data.</p>
+                    <p><strong>6. Compliance:</strong> Follow all applicable laws, regulations, and company policies.</p>
+                    <p><strong>7. Continuous Improvement:</strong> Participate in training programs and maintain current industry knowledge.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -890,7 +967,7 @@ export default function ContractorOnboarding() {
             <Checkbox
               id="compensationAgreement"
               checked={formData.compensationAgreement}
-              onCheckedChange={(checked) => handleInputChange("compensationAgreement", checked)}
+              onCheckedChange={(checked) => handleInputChange("compensationAgreement", checked === true)}
               className="mt-1"
             />
             <div className="flex-1">
@@ -901,6 +978,47 @@ export default function ContractorOnboarding() {
                 I understand and agree to the commission structure, payment terms, and bonus programs outlined in the
                 Agent Compensation Agreement.
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCompensationAgreement(!showCompensationAgreement)}
+                className="mb-4"
+              >
+                {showCompensationAgreement ? (
+                  <>
+                    <ChevronUp className="w-4 h-4 mr-2" />
+                    Hide Compensation Agreement
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4 mr-2" />
+                    View Compensation Agreement
+                  </>
+                )}
+              </Button>
+              {showCompensationAgreement && (
+                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 text-sm max-h-96 overflow-y-auto">
+                  <h4 className="font-semibold mb-3">Agent Compensation Agreement</h4>
+                  <div className="space-y-3 text-gray-700">
+                    <p><strong>Weekly Earning Potential:</strong> $1,000-$1,500+ per week based on sales performance and commission structure.</p>
+                    <p><strong>Commission Structure:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• Basic Products (0-$299): 15% commission</li>
+                      <li>• Premium Products ($300-$999): 20% commission</li>
+                      <li>• Elite Products ($1000+): 25% commission</li>
+                    </ul>
+                    <p><strong>Bonus Programs:</strong></p>
+                    <ul className="ml-4 space-y-1">
+                      <li>• Monthly Volume Bonus: Additional 5% for 50+ sales</li>
+                      <li>• Value-Added Services: $25-$100 per attachment</li>
+                      <li>• Performance Incentives: Quarterly bonuses for top performers</li>
+                    </ul>
+                    <p><strong>Payment Terms:</strong> Weekly direct deposit every Friday for the previous week's confirmed sales.</p>
+                    <p><strong>Requirements:</strong> Minimum 20 hours per week, professional conduct, and adherence to company standards.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
