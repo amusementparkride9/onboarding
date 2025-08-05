@@ -243,7 +243,7 @@ export default function ContractorOnboarding() {
 
       // Submit to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwRWM3C5a71bpdLfmynoIPMqthsBeeaXOxJVt4hqL-oCRHs9XSs-l--2zcP92xzSu32/exec",
+        "https://script.google.com/macros/s/AKfycbwiNsIPMMIQciCNeVmT_aNXYuLg9s3Z_PY3muoS5g30UNQKAu_JeJCr7aggoPzgv3JC/exec",
         {
           method: "POST",
           mode: "no-cors",
